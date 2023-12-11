@@ -32,5 +32,9 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 
 **Actividades:**
 
-- Para poder instalar checkov previamente debe tener instalado Python >= 3.10, puede descargarlo en [este enlace](https://www.python.org/downloads/) y realizar su instalación por defecto.
--
+- Para poder instalar Checkov previamente debe tener instalado Python >= 3.10, puede descargarlo en [este enlace](https://www.python.org/downloads/) y realizar su instalación por defecto.
+- Puede verificar la versión de Python instalado ejecutando el siguiente comando en su CLI:
+
+´´´
+python --version
+´´´
