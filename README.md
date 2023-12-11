@@ -18,6 +18,7 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 - VSC instalado.
 - Git instalado en su laptop.
 - Cuenta de GitHub.
+- Usuario de Prisma Cloud.
 
 # Analizando mis repositorios de IaC con Prisma Cloud
 
@@ -25,7 +26,18 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 
 **Actividades:**
 
-- Hacerle un fork al repositorio "xxxxx" dentro de su cuenta de GitHub.
+1. Hacerle un fork al repositorio ["CfnGoat"](https://github.com/bridgecrewio/cfngoat.git) dentro de su cuenta de GitHub.}
+   ![CfnGoat Fork](./images/CFNGoat_Repo.png)
+
+2. Ingresar a Prisma Cloud con su usuario y contraseña asignado por Netdata.
+
+   `Prisma Cloud URL: https://apps.paloaltonetworks.com/apps`
+
+3. Integrar GitHub cómo Provider en Prisma Cloud, para ello seleccione las opciones: **Settings >> Code & Build Providers >> Code Repositories >> Add**
+   ![Add GitHub Provider](./images/GitHub_Provider.png)
+4. Seleccionar GitHub de la lista de Providers, dar click en **Previous - Configure Account** y luego en **Authorize**, seleccione únicamente el repositorio **CfnGoat** cómo el autorizado.
+   ![Authorize GitHub](./images/GitHub_Authorize.png)
+5. Al finalizar la autorización de acceso al repositorio podemos
 
 # Asegurando el cumplimiento en IaC con Prisma Cloud - Checkov
 
