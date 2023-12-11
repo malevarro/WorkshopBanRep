@@ -20,13 +20,13 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 - Cuenta de GitHub.
 - Usuario de Prisma Cloud.
 
-# Analizando mis repositorios de IaC con Prisma Cloud
+## Analizando mis repositorios de IaC con Prisma Cloud
 
 **Objetivo:** conectar un repositorio de GitHub que contenga templates/archivos de IaC a Prisma Cloud para poder detectar todos los hallazgos de incumplimiento y malas prácticas en Security as Code.
 
 **Actividades:**
 
-1. Hacerle un fork al repositorio ["CfnGoat"](https://github.com/bridgecrewio/cfngoat.git) dentro de su cuenta de GitHub.}
+1. Hacerle un fork al repositorio ["CfnGoat"](https://github.com/bridgecrewio/cfngoat.git) dentro de su cuenta de GitHub.
    ![CfnGoat Fork](./images/CFNGoat_Repo.png)
 
 2. Ingresar a Prisma Cloud con su usuario y contraseña asignado por Netdata.
@@ -37,9 +37,10 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
    ![Add GitHub Provider](./images/GitHub_Provider.png)
 4. Seleccionar GitHub de la lista de Providers, dar click en **Previous - Configure Account** y luego en **Authorize**, seleccione únicamente el repositorio **CfnGoat** cómo el autorizado.
    ![Authorize GitHub](./images/GitHub_Authorize.png)
-5. Al finalizar la autorización de acceso al repositorio podemos
+5. Al finalizar la autorización de acceso al repositorio, Prisma Cloud automáticamente detecta los incumplimientos de controles en IaC y muestra los hallazgos, estos resultados pueden ser consultados desde la opción: **Application Security >> Projects >> Overview** haciendo el filtro del repositorio adecuado.
+   ![Repo Scanning Results](./images/Repo_Results.png)
 
-# Asegurando el cumplimiento en IaC con Prisma Cloud - Checkov
+<!-- ## Asegurando el cumplimiento en IaC con Prisma Cloud - Checkov
 
 **Objetivo:** instalar el motor de escaneo de IaC **_Checkov_**
 
@@ -73,5 +74,6 @@ pip3 install checkov
 
 2. Abrir Visual Studio Code e instalar la extensión de Checkov en la opción: **Extensiones**, **buscar “Checkov”** dar click en **instalar.**
    ![VSC Checkov Extension](./images/VSC_Checkov_Ext.png)
+-->
 
 ## Asegurando mi proceso de despliegue de IaC con GitHub Actions
