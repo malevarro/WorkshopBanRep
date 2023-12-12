@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run Scan on IaC .tf files in the repository
-        uses: prisma-cloud-shiftleft/iac-scan-action@v53278c231c438216d99b463308a3cbed351ba0c3
+        uses: prisma-cloud-shiftleft/iac-scan-action@53278c231c438216d99b463308a3cbed351ba0c3
         id: iac-scan
         with:
           prisma_api_url: "https://api2.prismacloud.io"
