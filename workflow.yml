@@ -19,7 +19,7 @@ jobs:
         uses: prisma-cloud-shiftleft/iac-scan-action@v1
         id: iac-scan
         with:
-          prisma_api_url: "https://api.prismacloud.io"
+          prisma_api_url: "https://api2.prismacloud.io"
           access_key: ${{ secrets.PRISMA_CLOUD_ACCESS_KEY }}
           secret_key: ${{ secrets.PRISMA_CLOUD_SECRET_KEY }}
           asset_name: "my-repo-name"
@@ -28,7 +28,7 @@ jobs:
           #scan_path: './terraform'
           #failure_criteria: 'High:2,Medium:3,Low:5,Operator:or'
       - name: Upload scan result artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
           name: iac_scan_result

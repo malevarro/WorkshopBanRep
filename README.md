@@ -127,7 +127,7 @@ jobs:
         uses: prisma-cloud-shiftleft/iac-scan-action@v1
         id: iac-scan
         with:
-          prisma_api_url: 'https://api.prismacloud.io'
+          prisma_api_url: 'https://api2.prismacloud.io'
           access_key: ${{ secrets.PRISMA_CLOUD_ACCESS_KEY }}
           secret_key: ${{ secrets.PRISMA_CLOUD_SECRET_KEY }}
           asset_name: 'my-repo-name'
