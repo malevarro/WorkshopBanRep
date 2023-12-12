@@ -16,15 +16,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run Scan on IaC .tf files in the repository
-        uses: prisma-cloud-shiftleft/iac-scan-action@master
+        uses: bridgecrewio/checkov-action@master
         id: iac-scan
+        env:
+          PRISMA_API_URL: https://api2.prismacloud.io
         with:
-          prisma_api_url: "https://api2.prismacloud.io"
-          access_key: ${{ secrets.PRISMA_CLOUD_ACCESS_KEY }}
-          secret_key: ${{ secrets.PRISMA_CLOUD_SECRET_KEY }}
-          asset_name: "my-repo-name"
-          template_type: "TF"
-          template_version: 0.13
+          api-key: ${{ secrets.BC_API_KEY }}
+          #prisma_api_url: "https://api2.prismacloud.io"
+          #access_key: ${{ secrets.PRISMA_CLOUD_ACCESS_KEY }}
+          #secret_key: ${{ secrets.PRISMA_CLOUD_SECRET_KEY }}
+          #asset_name: "my-repo-name"
+          #template_type: "TF"
+          #template_version: 0.13
           #scan_path: './terraform'
           #failure_criteria: 'High:2,Medium:3,Low:5,Operator:or'
       #- name: Upload scan result artifact
