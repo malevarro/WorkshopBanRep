@@ -90,15 +90,12 @@ _`Nota: Asegúrese de establecer una expiración para la access key, esta es la 
 
 3. En su nuevo repositorio, seleccionar las siguientes opciones **Settings >> Secrets and variables >> Actions >> New repository secret** y crear las siguientes variables en GitHub:
 
-- `Name: PRISMA_CLOUD_ACCESS_KEY`
-- `Secret: Your_Prisma_Cloud_Access_Key_Value`
-
-- `Name: PRISMA_CLOUD_SECRET_KEY`
-- `Secret: Your_Prisma_Cloud_Secret_Key_Value`
+- `Name: BC_API_KEY `
+- `Secret: AccessKey::SecretKey`
 
   ![Create Secrets in GitHub](./images/GitHub_Secrets.png)
 
-_`Nota: Asegúrese de no incluir espacios en blanco en el secret`_
+_`Nota: Asegúrese de no incluir espacios en blanco en el secret y de separar los dos valores por los caracteres "::"`_
 
 4. Configurar el Workflow de GitHub Actions para escanear los archivos de terraform del directorio `./terraform`, para ello seleccione **Actions >> Buscar Prisma Cloud >> Configure**
    ![Prisma Cloud Workflow](./images/GitHub_Prisma.png)
@@ -145,3 +142,6 @@ _`Nota: el código anterior también está disponible en el archivo ./workflow.y
 Toda la información para configuración de la tarea de escaneo IaC de Prisma puede encontrarla en [este enlace](https://github.com/bridgecrewio/checkov-action) y el command reference completo lo puede encontrar en [este enlace.](https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html)
 
 6. Realice un commit o push cualquiera dentro del repositorio, puede abrir el archivo `./README.md` y agregar al final del archivo una linea de texto cualquiera y realizar el commit de los cambios para disparar el Pipeline de escaneo de los archivos de terraform.
+
+7. En cada evento push en el repositorio se va a correr la tarea de escaneo IaC de Prisma Cloud, si desea ver los resultados del escaneo, puede ir a **Actions y seleccionar el último workflow** Al final puede encontrar el enlace directo a Prisma Cloud para ver los hallazgos en Prisma Cloud, pero también los va a encontrar en el mismo output del CLI.
+   ![GitHub Actions Results](./images/GitHubActions_Results.png)
