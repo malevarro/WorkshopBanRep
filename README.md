@@ -145,3 +145,5 @@ Toda la información para configuración de la tarea de escaneo IaC de Prisma pu
 
 7. En cada evento push en el repositorio se va a correr la tarea de escaneo IaC de Prisma Cloud, si desea ver los resultados del escaneo, puede ir a **Actions y seleccionar el último workflow** Al final puede encontrar el enlace directo a Prisma Cloud para ver los hallazgos en Prisma Cloud, pero también los va a encontrar en el mismo output del CLI.
    ![GitHub Actions Results](./images/GitHubActions_Results.png)
+
+Made with Love :blue_heart: by Netdata Cloud & Automate Team.
