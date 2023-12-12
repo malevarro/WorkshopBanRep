@@ -77,3 +77,76 @@ pip3 install checkov
 -->
 
 ## Asegurando mi proceso de despliegue de IaC con GitHub Actions
+
+**Objetivo:** Crear un pipeline en GitHub Actions con un Job de Prisma Cloud qué escanee por incumplimientos de controles en IaC.
+
+**Actividades:**
+
+1. Obtener una Access Key y Secret Key de Prisma Cloud, puede encontrar el [paso a paso para crearla en este enlace](https://docs.prismacloud.io/en/classic/cspm-admin-guide/manage-prisma-cloud-administrators/create-access-keys)
+
+_`Nota: Asegúrese de establecer una expiración para la access key, esta es la buena práctica`_
+
+2. Ir a Github y hacerle un fork a este repositorio en su cuenta de GitHub (mismos pasos que en el laboratorio anterior).
+
+3. En su nuevo repositorio, seleccionar las siguientes opciones **Settings >> Secrets and variables >> Actions >> New repository secret** y crear las siguientes variables en GitHub:
+
+- `Name: PRISMA_CLOUD_ACCESS_KEY`
+- `Secret: Your_Prisma_Cloud_Access_Key_Value`
+
+- `Name: PRISMA_CLOUD_SECRET_KEY`
+- `Secret: Your_Prisma_Cloud_Secret_Key_Value`
+
+  ![Create Secrets in GitHub](./images/GitHub_Secrets.png)
+
+_`Nota: Asegúrese de no incluir espacios en blanco en el secret`_
+
+4. Configurar el Workflow de GitHub Actions para escanear los archivos de terraform del directorio `./terraform`, para ello seleccione **Actions >> Buscar Prisma Cloud >> Configure**
+   ![Prisma Cloud Workflow](./images/GitHub_Prisma.png)
+
+5. Reemplace todo el contenido del editor con el siguiente bloque de código y realice un **commit de los cambios en la rama main** Deje todo lo demás por defecto.
+
+```
+name: Prisma Cloud IaC Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  #schedule:
+    #- cron: '26 17 * * 0'
+
+jobs:
+  prisma_cloud_iac_scan:
+    runs-on: ubuntu-latest
+    name: Run Prisma Cloud IaC Scan to check Compliance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Scan on IaC .tf files in the repository
+        uses: prisma-cloud-shiftleft/iac-scan-action@v1
+        id: iac-scan
+        with:
+          prisma_api_url: 'https://api.prismacloud.io'
+          access_key: ${{ secrets.PRISMA_CLOUD_ACCESS_KEY }}
+          secret_key: ${{ secrets.PRISMA_CLOUD_SECRET_KEY }}
+          asset_name: 'my-repo-name'
+          template_type: 'TF'
+          template_version: 0.13
+          #scan_path: './terraform'
+          #failure_criteria: 'High:2,Medium:3,Low:5,Operator:or'
+      - name: Upload scan result artifact
+        uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          name: iac_scan_result
+          path: ${{ steps.iac-scan.outputs.iac_scan_result_path }}
+```
+
+![GitHub Prisma Cloud IaC Commit](./images/GitHub_Commit.png)
+
+_`Nota: el código anterior también está disponible en el archivo ./workflow.yml en este repositorio`_
+
+Toda la información para configuración de la tarea de escaneo IaC de Prisma puede encontrarla en [este enlace](https://github.com/prisma-cloud-shiftleft/iac-scan-action)
+
+6. Realice un commit o push cualquiera dentro del repositorio, puede abrir el archivo `./README.md` y agregar al final del archivo una linea de texto cualquiera y realizar el commit de los cambios para disparar el Pipeline de escaneo de los archivos de terraform.
