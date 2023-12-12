@@ -110,11 +110,11 @@ name: Prisma Cloud IaC Scan
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   #schedule:
-    #- cron: '26 17 * * 0'
+  #- cron: '26 17 * * 0'
 
 jobs:
   prisma_cloud_iac_scan:
@@ -124,29 +124,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run Scan on IaC .tf files in the repository
-        uses: prisma-cloud-shiftleft/iac-scan-action@v1
+        uses: bridgecrewio/checkov-action@master
         id: iac-scan
+        env:
+          PRISMA_API_URL: https://api2.prismacloud.io
         with:
-          prisma_api_url: 'https://api2.prismacloud.io'
-          access_key: ${{ secrets.PRISMA_CLOUD_ACCESS_KEY }}
-          secret_key: ${{ secrets.PRISMA_CLOUD_SECRET_KEY }}
-          asset_name: 'my-repo-name'
-          template_type: 'TF'
-          template_version: 0.13
-          #scan_path: './terraform'
-          #failure_criteria: 'High:2,Medium:3,Low:5,Operator:or'
-      - name: Upload scan result artifact
-        uses: actions/upload-artifact@v2
-        if: success() || failure()
-        with:
-          name: iac_scan_result
-          path: ${{ steps.iac-scan.outputs.iac_scan_result_path }}
+          api-key: ${{ secrets.BC_API_KEY }}
+          directory: ./terraform
+          framework: terraform
+          quiet: true
+          use_enforcement_rules: true
+          #open_api_key: 'xxxxxx'
+
 ```
 
 ![GitHub Prisma Cloud IaC Commit](./images/GitHub_Commit.png)
 
 _`Nota: el código anterior también está disponible en el archivo ./workflow.yml en este repositorio`_
 
-Toda la información para configuración de la tarea de escaneo IaC de Prisma puede encontrarla en [este enlace](https://github.com/prisma-cloud-shiftleft/iac-scan-action)
+Toda la información para configuración de la tarea de escaneo IaC de Prisma puede encontrarla en [este enlace](https://github.com/bridgecrewio/checkov-action) y el command reference completo lo puede encontrar en [este enlace.](https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html)
 
 6. Realice un commit o push cualquiera dentro del repositorio, puede abrir el archivo `./README.md` y agregar al final del archivo una linea de texto cualquiera y realizar el commit de los cambios para disparar el Pipeline de escaneo de los archivos de terraform.
