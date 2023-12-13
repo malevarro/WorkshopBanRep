@@ -1,6 +1,6 @@
-# WorkshopBanRep
+# Workshop Prisma Cloud CSPM & CodeSec
 
-Este repositorio contendrá todos los archivos relacionados al workshop de Prisma Cloud para Banco de La República.
+Los contenidos de este repositorio están enfocados a actividades prácticas para los módulos de CSPM y de Code & Application Security de Prisma Cloud.
 
 # Cloud Security Posture Management 🛡️
 
