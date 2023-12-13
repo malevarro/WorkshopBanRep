@@ -2,6 +2,115 @@
 
 Este repositorio contendrá todos los archivos relacionados al workshop de Prisma Cloud para Banco de La República.
 
+# Cloud Secure Posture Management
+
+## Introducción
+
+El módulo CSPM (Cloud Secure Posture Management) de Prisma Cloud está enfocado en la postura y gobierno de las aplicaciones y recursos desplegados en la nube pública estableciendo controles de compliance en distintas categorías (config, network, anomaly, data) y basados en distintos benchmarks del mercado tipo CIS, NIST, GDPR, HIPAA, PCI, benchmarks de CSPs. Esto se logra a través de la ingesta de metadata desde Prisma Cloud hacia las cuentas de nube pública a través de sus API endpoints. Prisma Cloud almacena, procesa y correlaciona esta data a través de sus engines y de ML para presentar una postura global de seguridad de los recursos desplegados en la nube pública.
+
+Actualmente son soportadas las 5 nubes públicas principales; AWS, Azure, GCP, OCI y Alibaba. Próximamente se estará incluyendo IBM Cloud.
+
+Para este workshop nos enfocaremos principalmente en seguridad de la red cloud con Prisma Cloud, esto implica poder ingestar desde Prisma Cloud los AWS flow logs (logs de actividad de red en la VPC) un vistazo general a la arquitectura de funcionamiento de Prisma Cloud es:
+
+![Prisma Clod - CSPM Network Diagram](./images/CSPM_Net_Arch.png)
+
+## Prerequisitos:
+
+- Cuenta de AWS funcional, puede crear una free tier desde [este enlace.](https://aws.amazon.com/resources/create-account/)
+
+_`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentro del bundle Free Tier por lo que no incurrirá en costos para la ejecución de este Workshop.`_
+
+## Datos a tener en cuenta:
+
+- `Url de acceso a Prisma Cloud: https://apps.paloaltonetworks.com`
+- `Usuario: su correo electrónico.`
+- `Contraseña: su contraseña configurada.`
+- `No olvide configurar su MFA, puede hacerlo con el mismo correo del usuario.`
+
+## Habilitar AWS Flow Logs para Prisma Cloud:
+
+**Objetivo:** Habilitar la visibilidad de los AWS flow logs para que Prisma Cloud pueda detectar exposición y anomalías en las conexiones.
+
+**Actividades:**
+
+1. Crear un Cloudwatch Log Group en AWS, para ello seleccione **Servicios >> Cloudwatch >> Logs >> Crear Log Group** Asigne el nombre de su preferencia.
+
+   ![Create Log Group](./images/LogGroup.png)
+
+2. Habilitar flow logs dentro de la AWS VPC, para ello seleccione **Servicios >> VPC >> Sus VPCs**
+
+- **Seleccione su VPC (Default)** luego seleccione el botón **Acciones >> Crear Flow Log**
+
+- Seleccione el filtro en **Todo**, el destino debe ser **Enviar a CloudWatch Logs,** busque y seleccione el Log Group creado en el punto 1.
+
+- En una nueva ventada de AWS cree un Rol IAM para el envío de los Flow Logs a CloudWatch, puede encontrar un tutorial en [este enlace.](https://docs.aws.amazon.com/es_es/vpc/latest/userguide/flow-logs-cwl.html#flow-logs-iam-role)
+
+- Avise al instructor una vez creado el rol para revisar este y asegurar qué la política de confianza se haya configurado de manera adecuada.
+
+- En la ventana inicial de AWS, asigne el rol recién creado y de click en Crear Flow Log.
+  ![Create VPC Flow Log to Cloudwatch Log group](./images/FlowLog.png)
+
+## Integración de cuenta de nube pública:
+
+**Objetivo:** Integrar la cuenta de AWS a Prisma Cloud para realizar la ingesta de datos y a partir de allí revisar cual es el estado de la gobernanza de los recursos desplegados en la nube pública.
+
+**Actividades:**
+
+1. Integrar la cuenta de AWS, para ello inicie sesión dentro de Prisma Cloud, allí vamos a seleccionar la opción **Settings >> Cloud Accounts >> Add Cloud Account**
+   ![Add Cloud Account PC](./images/PC_AddAcc.png)
+
+- A partir de allí seleccione: **AWS → Account → Desactive la opción "Agentless Workload Scanning" → Next**
+
+  ![Add AWS Account](./images/AddAWS.png)
+
+- Ingrese el account ID de su cuenta AWS, [aquí un tutorial de cómo encontrarlo](https://docs.aws.amazon.com/es_es/accounts/latest/reference/manage-acct-identifiers.html), y un **nombre para la cuenta en Prisma Cloud.**
+
+- Para crear los recursos necesarios en AWS seleccione el botón **Create IAM Role**, esto lo redirigirá a AWS en su navegador (vigencia del enlace: 1 hora)
+
+  ![Add AWS Account](./images/AddAWS2.png)
+
+- En AWS seleccione la casilla de verificación _I acknowledge that AWS CloudFormation might create IAM resources with custom names_ y luego de click en el botón "Crear"
+
+- Una vez finalizada la creación de los recursos en AWS seleccione la opción **Outputs**, allí encuentra el ARL del rol IAM creado, **copie el valor**, regrese a Prisma Cloud y peguelo en el campo **IAM Role ARN**
+
+- Dentro del Account Group seleccione **Workshop BanRep** y de click en **Next**
+
+  ![Add AWS Account](./images/AddAWS3.png)
+
+- Revise el status (puede que deba esperar unos segundos) y de click en **Save and Close**
+
+  ![Add AWS Account](./images/AddAWS4.png)
+
+## Controles de Network en Prisma Cloud:
+
+Prisma cloud dispone de +1200 controles construidos qué son agrupados en +90 benchmarks de cumplimiento, entre ellos hay 44 controles para network. A partir de allí se puede robustecer tanto cómo se necesite y se requiera la gobernanza de la red en AWS a través de controles custom creados en Prisma Cloud.
+
+**Objetivo:** Dar un breve vistazo a las políticas de red predefinidas en Prisma Cloud.
+
+**Actividades:**
+
+1. Revisar controles (políticas) de Prisma Cloud para el vector de ataque Network. Para ello vamos a Prisma Cloud, seleccionamos la opción **Policies >> Overview** y aplicamos los siguientes filtros: `Policy Type = Network` y `Cloud Type = AWS`
+
+   ![Network Controls Prisma Cloud](./images/NetControls.png)
+
+- En la parte de abajo encontrará las controles para los filtros seleccionados, preste especial atención a los campos `Description`, `Severity` y `Category` ellos indican: El detalle del control, y como catalogarlo si ocurre un incumplimiento.
+
+- Del lado derecho tiene la columna **actions**, seleccione el icono del lápiz para cualquier control, allí podrá revisar con mayor detalle cada control.
+
+_`Nota: Puede navegar por la interfaz tanto cómo desee para revisar los controles con detalle y entender cada uno de ellos.`_
+
+## Real Time Network Revision con RQLs:
+
+**Objetivo:** Conocer y revisar cuales son los hallazgos dentro de la red de mi nube pública
+
+**Actividades:**
+
+1. Entendiendo RQL (Resource Query Language): El motor RQL es el corazón del módulo CSPM de Prisma Cloud, en su mayoría, cada control (política) está atado a una query qué lo qué hace es buscar aquellos recursos qué hagan match y en consecuencia reportar el incumplimiento. El motor RQL es el encargado de interpretar y correr las queries de cada uno de los controles y por ende mantener actualizado el overview de la postura y gobierno en nube. Hay 3 tipos básicos de query en RQL: **Config, network & event.** Cada una de ellas enfocadas en detectar distintos tipos de brechas y/o vulnerabilidades en la nube pública.
+
+Para el caso específico de Network, Prisma Cloud cuenta con 2 engines de análisis de datos de red, el primero es **Network Config Analyzer** encargado de asegurar la configuración de las redes en la nube pública. El segundo es **Network Flow Analyzer** encargado de analizar incidentes dentro de las redes en la nube pública.
+
+## Visibilizando el incumplimiento:
+
 # Code & Application Security
 
 ## Introducción
@@ -12,7 +121,7 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 2. Integración con herramientas CI/CD como AWS Code Build, Azure DevOps, GitHub Actions, Circle CI, Jenkins, entre otras.
 3. Real Time Scanning en los IDE's de desarrollo VSC y JetBrains.
 
-## Prerequisitos:
+## Prerequisitos
 
 - Python instalado.
 - VSC instalado.
