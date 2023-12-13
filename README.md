@@ -2,7 +2,7 @@
 
 Este repositorio contendrá todos los archivos relacionados al workshop de Prisma Cloud para Banco de La República.
 
-# Cloud Secure Posture Management 🛡️
+# Cloud Security Posture Management 🛡️
 
 ## Introducción 🚀
 
@@ -48,6 +48,7 @@ _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentr
 - Avise al instructor una vez creado el rol para revisar este y asegurar qué la política de confianza se haya configurado de manera adecuada.
 
 - En la ventana inicial de AWS, asigne el rol recién creado y de click en Crear Flow Log.
+
   ![Create VPC Flow Log to Cloudwatch Log group](./images/FlowLog.png)
 
 ## Integración de cuenta de nube pública 🌐
@@ -57,6 +58,7 @@ _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentr
 **Actividades:**
 
 1. Integrar la cuenta de AWS, para ello inicie sesión dentro de Prisma Cloud, allí vamos a seleccionar la opción **Settings >> Cloud Accounts >> Add Cloud Account**
+
    ![Add Cloud Account PC](./images/PC_AddAcc.png)
 
 - A partir de allí seleccione: **AWS → Account → Desactive la opción "Agentless Workload Scanning" → Next**
@@ -272,6 +274,12 @@ terraform apply --auto-approve
 - A partir de aquí sólo resta esperar que Prisma Cloud realice la detección y notifique el incumplimiento a su correo electrónico.
 
 `Nota:` _Tenga en cuenta qué la detección y alertamiento por parte de Prisma Cloud conlleva un tiempo debido a qué la funcionalidad es 100% Agentless._
+
+- Al finalizar ejecute el siguiente comando para destruir los recursos del workshop desplegados en AWS, también puede solamente borrar la instancia y luego la VPC.
+
+```
+terraform destroy --auto-approve
+```
 
 # Code & Application Security 🛡️
 
