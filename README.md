@@ -14,20 +14,20 @@ Para este workshop nos enfocaremos principalmente en seguridad de la red cloud c
 
 ![Prisma Clod - CSPM Network Diagram](./images/CSPM_Net_Arch.png)
 
-## Prerequisitos:
+## Prerequisitos
 
 - Cuenta de AWS funcional, puede crear una free tier desde [este enlace.](https://aws.amazon.com/resources/create-account/)
 
 _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentro del bundle Free Tier por lo que no incurrirá en costos para la ejecución de este Workshop.`_
 
-## Datos a tener en cuenta:
+## Datos a tener en cuenta
 
 - `Url de acceso a Prisma Cloud: https://apps.paloaltonetworks.com`
 - `Usuario: su correo electrónico.`
 - `Contraseña: su contraseña configurada.`
 - `No olvide configurar su MFA, puede hacerlo con el mismo correo del usuario.`
 
-## Habilitar AWS Flow Logs para Prisma Cloud:
+## Habilitar AWS Flow Logs para Prisma Cloud
 
 **Objetivo:** Habilitar la visibilidad de los AWS flow logs para que Prisma Cloud pueda detectar exposición y anomalías en las conexiones.
 
@@ -50,7 +50,7 @@ _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentr
 - En la ventana inicial de AWS, asigne el rol recién creado y de click en Crear Flow Log.
   ![Create VPC Flow Log to Cloudwatch Log group](./images/FlowLog.png)
 
-## Integración de cuenta de nube pública:
+## Integración de cuenta de nube pública
 
 **Objetivo:** Integrar la cuenta de AWS a Prisma Cloud para realizar la ingesta de datos y a partir de allí revisar cual es el estado de la gobernanza de los recursos desplegados en la nube pública.
 
@@ -81,7 +81,7 @@ _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentr
 
   ![Add AWS Account](./images/AddAWS4.png)
 
-## Controles de Network en Prisma Cloud:
+## Controles de Network en Prisma Cloud
 
 Prisma cloud dispone de +1200 controles construidos qué son agrupados en +90 benchmarks de cumplimiento, entre ellos hay 44 controles para network. A partir de allí se puede robustecer tanto cómo se necesite y se requiera la gobernanza de la red en AWS a través de controles custom creados en Prisma Cloud.
 
@@ -99,7 +99,7 @@ Prisma cloud dispone de +1200 controles construidos qué son agrupados en +90 be
 
 _`Nota: Puede navegar por la interfaz tanto cómo desee para revisar los controles con detalle y entender cada uno de ellos.`_
 
-## Real Time Network Revision con RQLs:
+## Real Time Network Revision con RQLs
 
 **Objetivo:** Conocer y revisar cuales son los hallazgos dentro de la red de mi nube pública
 
@@ -109,9 +109,133 @@ _`Nota: Puede navegar por la interfaz tanto cómo desee para revisar los control
 
 Para el caso específico de Network, Prisma Cloud cuenta con 2 engines de análisis de datos de red, el primero es **Network Config Analyzer** encargado de asegurar la configuración de las redes en la nube pública. El segundo es **Network Flow Analyzer** encargado de analizar incidentes dentro de las redes en la nube pública.
 
-## Creando mis controles de red a medida:
+Para hacer uso de cualquiera de los dos engines basta con situarse en el módulo **Investigate** y luego iniciar una query así:
+
+- Network Config Analyzer: `config from network...`
+- Network Flow Analyzer: `network from...`
+
+El módulo Investigate es didáctico y te sugiere opciones para completar tu query.
+
+![RQL Example](./images/RQLExample.png)
+
+2. Probar RQL's de ejemplo: para esta actividad se sugiere hacer el despliegue de algunas instancias EC2 en AWS dentro del free tier y generar algunas conexiones de red para poder obtener resultado de los datos de las RQL en Prisma Cloud.
+
+**`Hacer terrraform template qué sirva para esto.`**
+
+Copie y pegue en el módulo de Investigate cualquiera de las siguientes RQL:
+
+- Buscar instancias EC2 qué permitan el acceso por puertos 80/443 desde Internet:
+
+```
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/80' , 'tcp/443' )
+```
+
+- Buscar instancias EC2 que tienen acceso desde IPs no confiables:
+
+```
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ('tcp/0:79','tcp/81:442','tcp/444:65535') and effective.action = 'Allow'
+```
+
+- Buscar servicios PaaS en AWS expuestos a internet:
+
+```
+config from network where source.network = '0.0.0.0/0' and dest.resource.type = 'PaaS' and dest.cloud.type = 'AWS'
+```
+
+Para cada uno de los resultados de las queries anteriores puede ver el Network Path Analysis, el cual le muestra la ruta de acceso desde internet hasta el recurso.
+
+![Network Path Analysis](./images/NetPath.png)
+
+Puede explorar la configuración exacta de cualquiera de los recursos qué hagan match con la consulta así:
+
+![Resource Details Network Path](./images/ResourceDetails.png)
+
+- Ver tráfico desde internet e IPs sospechosas hacia bases de datos RDS.
+
+```
+network from vpc.flow_record where source.publicnetwork IN ( 'Suspicious IPs' , 'Internet IPs' ) and dest.resource IN ( resource where role IN ( 'AWS RDS' , 'Database' ) )
+```
+
+- Ver tráfico hacía instancias públicas
+
+```
+network from vpc.flow_record where source.publicnetwork IN ( 'Internet IPs' ) and protocol = 'TCP' AND dest.port IN ( 21,23,80)
+```
+
+- Buscar instancias con vulnerabilidades recibiendo tráfico de internet:
+
+```
+network from vpc.flow_record where dest.resource IN ( resource where finding.type IN ( 'Host Vulnerability' ) AND finding.name IN ( 'CVE-2017-5754', 'CVE-2017-5753', 'CVE-2017-5715' ) )  and bytes > 0
+```
+
+- Buscar recursos de un segmento de red qué están enviando tráfico hacía internet:
+
+```
+network from vpc.flow_record where cloud.account=account_name AND source.ip IN(172.31.0.0/12,10.0.0.0/8) AND dest.publicnetwork IN 'Internet IPs' AND bytes > 0
+```
+
+- Buscar instancias EC2 qué son accesibles desde internet por puertos SSH y RDP:
+
+```
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and effective.action = 'Allow' and protocol.ports in ( 'tcp/22' , 'tcp/3389' )
+```
+
+- Buscar bases de datos RDS qué están accesibles desde internet por puerto 3306:
+
+```
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner in ( 'amazon-rds' ) and protocol.ports in ( 'tcp/3306')
+```
+
+- Buscar instancias EC2 qué están enviando tráfico hacia destinos sospechosos en internet:
+
+```
+config from network where source.resource.type = 'Instance' and source.cloud.type = 'AWS' and dest.network = UNTRUST_INTERNET
+```
+
+Si desea revisar más ejemplos puede consultar el RQL Reference en [este enlace.](https://docs.prismacloud.io/en/classic/rql-reference/rql-reference/network-query/network-query)
+
+Los resultados de estas queries son similares a la siguiente imágen:
+
+![RQL Query Results](./images/RQLResults.png)
+
+Finalmente Prisma Cloud ofrece un gráfico de red inteligente qué agrega y relaciona los recursos monitoreados por Prisma Cloud para visualizar y entender las conexiones de red, este puede ser activado en la esquina superior derecha del módulo **Investigate.**
+
+![Network Intelligent Graph](./images/NetworkGraph.png)
+
+**Toda la documentación oficial puede consultarla en [este enlace.](https://docs.prismacloud.io/en/classic/cspm-admin-guide/investigate-incidents-on-prisma-cloud/investigate-network-incidents-on-prisma-cloud)**
+
+## Creando mis controles de red a medida
+
+**Objetivo:** Crear un control (política) custom a medida para el cliente dentro de Prisma Cloud.
+
+**Actividades:**
+
+1. Crear un control de red custom, para ello vamos a ir a Prisma Cloud y seleccionar la opción **Policies >> Add Policy >> Network**
+
+![Custom Network Control Prisma Cloud](./images/CustomPolicy.png)
+
+En la ventana qué se despliega ingrese los siguientes datos:
+
+- `Policy Name:` SuNombre-Network
+- `Description:` CustomNetwork Control for BanRep Workshop
+- `Severity:` Medium
+- `Query`: Elija cualquiera de las de ejemplo e insértela en este espacio. No olvide oprimir **Search**
+- `Recommendations for Remediation:` Test Control, Not needed.
+
+Presione **Save** para guardar el control.
+
+2. Revisar el control creado. Dentro de la opción **Policies >> Overview** busque por el nombre del control asignado y verifique qué fue creado satisfactoriamente.
 
 ## Visibilizando el incumplimiento:
+
+**Objetivo:** Crear una regla de alerta para qué envie un correo de notificación en el evento de incumplimiento del control.
+
+**Actividades:**
+
+1. Crear el "Alert Rule" en Prisma Cloud para el control custom creado hace un momento con integración vía correo a su email.
+2. Crear otra instancia con un terraform qué tenga exposición a internet, modificar el custom control para una RQL específica controlada.
+
+Tenga en cuenta qué la detección y alertamiento por parte de Prisma Cloud conlleva un tiempo debido a qué la funcionalidad es 100% Agentless.
 
 # Code & Application Security
 
@@ -160,15 +284,19 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 1. Para poder instalar Checkov previamente debe tener instalado Python >= 3.10, puede descargarlo en [este enlace](https://www.python.org/downloads/) y realizar su instalación por defecto.
 2. Puede verificar la versión de Python instalado ejecutando el siguiente comando en su CLI:
 
-```
+````
+
 python --version
+
 ```
 
 3. Instalar Checkov, puede utilizar cualquiera de los dos comandos:
 
 ```
+
 pip install checkov
 pip3 install checkov
+
 ```
 
 4. Descargue o clone el repositorio "xxxxx" en su maquina local.
@@ -214,35 +342,34 @@ _`Nota: Asegúrese de no incluir espacios en blanco en el secret y de separar lo
 5. Reemplace todo el contenido del editor con el siguiente bloque de código y realice un **commit de los cambios en la rama main** Deje todo lo demás por defecto.
 
 ```
+
 name: Prisma Cloud IaC Scan
 
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-  #schedule:
-  #- cron: '26 17 * * 0'
+push:
+branches: ["main"]
+pull_request:
+branches: ["main"]
+#schedule:
+#- cron: '26 17 \* \* 0'
 
 jobs:
-  prisma_cloud_iac_scan:
-    runs-on: ubuntu-latest
-    name: Run Prisma Cloud IaC Scan to check Compliance
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Run Scan on IaC .tf files in the repository
-        uses: bridgecrewio/checkov-action@master
-        id: iac-scan
-        env:
-          PRISMA_API_URL: https://api2.prismacloud.io
-        with:
-          api-key: ${{ secrets.BC_API_KEY }}
-          directory: ./terraform
-          framework: terraform
-          quiet: true
-          use_enforcement_rules: true
-          #open_api_key: 'xxxxxx'
+prisma_cloud_iac_scan:
+runs-on: ubuntu-latest
+name: Run Prisma Cloud IaC Scan to check Compliance
+steps: - name: Checkout
+uses: actions/checkout@v3 - name: Run Scan on IaC .tf files in the repository
+uses: bridgecrewio/checkov-action@master
+id: iac-scan
+env:
+PRISMA_API_URL: https://api2.prismacloud.io
+with:
+api-key: ${{ secrets.BC_API_KEY }}
+directory: ./terraform
+framework: terraform
+quiet: true
+use_enforcement_rules: true
+#open_api_key: 'xxxxxx'
 
 ```
 
@@ -258,3 +385,7 @@ Toda la información para configuración de la tarea de escaneo IaC de Prisma pu
    ![GitHub Actions Results](./images/GitHubActions_Results.png)
 
 Made with Love :blue_heart: by Netdata Cloud & Automate Team.
+
+```
+
+```
