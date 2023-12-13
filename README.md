@@ -2,9 +2,9 @@
 
 Este repositorio contendrá todos los archivos relacionados al workshop de Prisma Cloud para Banco de La República.
 
-# Cloud Secure Posture Management
+# Cloud Secure Posture Management 🛡️
 
-## Introducción
+## Introducción 🚀
 
 El módulo CSPM (Cloud Secure Posture Management) de Prisma Cloud está enfocado en la postura y gobierno de las aplicaciones y recursos desplegados en la nube pública estableciendo controles de compliance en distintas categorías (config, network, anomaly, data) y basados en distintos benchmarks del mercado tipo CIS, NIST, GDPR, HIPAA, PCI, benchmarks de CSPs. Esto se logra a través de la ingesta de metadata desde Prisma Cloud hacia las cuentas de nube pública a través de sus API endpoints. Prisma Cloud almacena, procesa y correlaciona esta data a través de sus engines y de ML para presentar una postura global de seguridad de los recursos desplegados en la nube pública.
 
@@ -14,20 +14,20 @@ Para este workshop nos enfocaremos principalmente en seguridad de la red cloud c
 
 ![Prisma Clod - CSPM Network Diagram](./images/CSPM_Net_Arch.png)
 
-## Prerequisitos
+## Prerequisitos 🛠️
 
 - Cuenta de AWS funcional, puede crear una free tier desde [este enlace.](https://aws.amazon.com/resources/create-account/)
 
 _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentro del bundle Free Tier por lo que no incurrirá en costos para la ejecución de este Workshop.`_
 
-## Datos a tener en cuenta
+## Datos a tener en cuenta 🔍
 
 - `Url de acceso a Prisma Cloud: https://apps.paloaltonetworks.com`
 - `Usuario: su correo electrónico.`
 - `Contraseña: su contraseña configurada.`
 - `No olvide configurar su MFA, puede hacerlo con el mismo correo del usuario.`
 
-## Habilitar AWS Flow Logs para Prisma Cloud
+## Habilitar AWS Flow Logs para Prisma Cloud 🌐
 
 **Objetivo:** Habilitar la visibilidad de los AWS flow logs para que Prisma Cloud pueda detectar exposición y anomalías en las conexiones.
 
@@ -50,7 +50,7 @@ _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentr
 - En la ventana inicial de AWS, asigne el rol recién creado y de click en Crear Flow Log.
   ![Create VPC Flow Log to Cloudwatch Log group](./images/FlowLog.png)
 
-## Integración de cuenta de nube pública
+## Integración de cuenta de nube pública 🌐
 
 **Objetivo:** Integrar la cuenta de AWS a Prisma Cloud para realizar la ingesta de datos y a partir de allí revisar cual es el estado de la gobernanza de los recursos desplegados en la nube pública.
 
@@ -81,7 +81,7 @@ _`Nota: todas las actividades ejecutadas dentro de la cuenta de AWS están dentr
 
   ![Add AWS Account](./images/AddAWS4.png)
 
-## Controles de Network en Prisma Cloud
+## Controles de Network en Prisma Cloud 🌐
 
 Prisma cloud dispone de +1200 controles construidos qué son agrupados en +90 benchmarks de cumplimiento, entre ellos hay 44 controles para network. A partir de allí se puede robustecer tanto cómo se necesite y se requiera la gobernanza de la red en AWS a través de controles custom creados en Prisma Cloud.
 
@@ -99,7 +99,7 @@ Prisma cloud dispone de +1200 controles construidos qué son agrupados en +90 be
 
 _`Nota: Puede navegar por la interfaz tanto cómo desee para revisar los controles con detalle y entender cada uno de ellos.`_
 
-## Real Time Network Revision con RQLs
+## Real Time Network Revision con RQL 🌐
 
 **Objetivo:** Conocer y revisar cuales son los hallazgos dentro de la red de mi nube pública
 
@@ -194,7 +194,7 @@ config from network where source.resource.type = 'Instance' and source.cloud.typ
 
 Si desea revisar más ejemplos puede consultar el RQL Reference en [este enlace.](https://docs.prismacloud.io/en/classic/rql-reference/rql-reference/network-query/network-query)
 
-Los resultados de estas queries son similares a la siguiente imágen:
+Los resultados de estas queries son similares a la siguiente imagen:
 
 ![RQL Query Results](./images/RQLResults.png)
 
@@ -204,7 +204,7 @@ Finalmente Prisma Cloud ofrece un gráfico de red inteligente qué agrega y rela
 
 **Toda la documentación oficial puede consultarla en [este enlace.](https://docs.prismacloud.io/en/classic/cspm-admin-guide/investigate-incidents-on-prisma-cloud/investigate-network-incidents-on-prisma-cloud)**
 
-## Creando mis controles de red a medida
+## Creando mis controles de red a medida 🌐
 
 **Objetivo:** Crear un control (política) custom a medida para el cliente dentro de Prisma Cloud.
 
@@ -219,27 +219,63 @@ En la ventana qué se despliega ingrese los siguientes datos:
 - `Policy Name:` SuNombre-Network
 - `Description:` CustomNetwork Control for BanRep Workshop
 - `Severity:` Medium
-- `Query`: Elija cualquiera de las de ejemplo e insértela en este espacio. No olvide oprimir **Search**
+- `Query`: No olvide oprimir **Search** después de insertar la RQL.
+
+```
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/80' , 'tcp/443' )
+```
+
 - `Recommendations for Remediation:` Test Control, Not needed.
 
 Presione **Save** para guardar el control.
 
 2. Revisar el control creado. Dentro de la opción **Policies >> Overview** busque por el nombre del control asignado y verifique qué fue creado satisfactoriamente.
 
-## Visibilizando el incumplimiento:
+## Visibilizando los incumplimientos 🌐
 
-**Objetivo:** Crear una regla de alerta para qué envie un correo de notificación en el evento de incumplimiento del control.
+**Objetivo:** Crear una regla de alerta para qué envíe un correo de notificación en el evento de incumplimiento del control.
 
 **Actividades:**
 
-1. Crear el "Alert Rule" en Prisma Cloud para el control custom creado hace un momento con integración vía correo a su email.
-2. Crear otra instancia con un terraform qué tenga exposición a internet, modificar el custom control para una RQL específica controlada.
+1. Crear el "Alert Rule" en Prisma Cloud para el control custom creado hace un momento con integración vía correo a su email. Para ello seleccione **Alerts >> Alert Rules >> Add Alert Rule**, en el nuevo wizard incluya los siguientes datos:
 
-Tenga en cuenta qué la detección y alertamiento por parte de Prisma Cloud conlleva un tiempo debido a qué la funcionalidad es 100% Agentless.
+- `Name`: SuNombre-Alert
+- `Alert Notifications`: True
+- `Account Group`: Seleccione su cuenta AWS
+- `Assign Policies`: Busque la policy creada por usted mismo en el punto anterior y seleccione su check (a la izquierda)
+- `Configure notifications`: Seleccione **Emails** y digíte el suyo en el primer campo. Habilite el botón deslizante a la derecha del email.
 
-# Code & Application Security
+Oprima **Next y Save.**
 
-## Introducción
+![Create Alert Rule](./images/AlertRule.png)
+
+2. Crear una instancia EC2 con el archivo terraform `./aws/main.tf`, esta EC2 tendrá exposición a internet por los puertos 80 y 443 y este será alertado por Prisma Cloud cómo incumplimiento.
+
+- Descargue el archivo `./aws/main.tf` a su equipo (también puede copiar y pegar su contenido en un archivo con el mismo nombre)
+- En su navegador abra la consola de AWS y abra una CloudShell, allí cargue el archivo descargado (o generado) y ejecute los siguientes comandos (línea por línea):
+
+```
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum -y install terraform
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply --auto-approve
+```
+
+![AWS Cloud Shell](./images/CloudShell.jpg)
+
+- Revise en la consola de AWS en el servicio **EC2 >> Instancias** qué ya haya una instancia corriendo con el nombre "EC2-Workshop" Seleccionela y revise los detalles de seguridad qué tengan los puertos 443 y 80 abiertos.
+
+- A partir de aquí sólo resta esperar que Prisma Cloud realice la detección y notifique el incumplimiento a su correo electrónico.
+
+`Nota:` _Tenga en cuenta qué la detección y alertamiento por parte de Prisma Cloud conlleva un tiempo debido a qué la funcionalidad es 100% Agentless._
+
+# Code & Application Security 🛡️
+
+## Introducción 🚀
 
 Prisma Cloud Code Security está pensado para asegurar desde una fase temprana el compliance en el código IaC, y evitar qué un error o no cumplimiento pueda traducirse en cientos de recursos con errores de configuraciones y/o vulnerabilidades en runtime. Actualmente soporta una amplia colección de recursos IaC cómo Dockerfile, manifiestos de Kubernetes, Helm Charts, Terraform, Terraform Plans, Cloudformation, Serverless, entre otros. Entre las principales integraciones se tienen:
 
@@ -247,7 +283,7 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 2. Integración con herramientas CI/CD como AWS Code Build, Azure DevOps, GitHub Actions, Circle CI, Jenkins, entre otras.
 3. Real Time Scanning en los IDE's de desarrollo VSC y JetBrains.
 
-## Prerequisitos
+## Prerequisitos 🛠️
 
 - Python instalado.
 - VSC instalado.
@@ -255,7 +291,7 @@ Prisma Cloud Code Security está pensado para asegurar desde una fase temprana e
 - Cuenta de GitHub.
 - Usuario de Prisma Cloud.
 
-## Analizando mis repositorios de IaC con Prisma Cloud
+## Analizando mis repositorios de IaC con Prisma Cloud 🌐
 
 **Objetivo:** conectar un repositorio de GitHub que contenga templates/archivos de IaC a Prisma Cloud para poder detectar todos los hallazgos de incumplimiento y malas prácticas en Security as Code.
 
@@ -315,7 +351,7 @@ pip3 install checkov
    ![VSC Checkov Extension](./images/VSC_Checkov_Ext.png)
 -->
 
-## Asegurando mi proceso de despliegue de IaC con GitHub Actions
+## Asegurando mi proceso de despliegue de IaC con GitHub Actions 🌐
 
 **Objetivo:** Crear un pipeline en GitHub Actions con un Job de Prisma Cloud qué escanee por incumplimientos de controles en IaC.
 
@@ -342,7 +378,6 @@ _`Nota: Asegúrese de no incluir espacios en blanco en el secret y de separar lo
 5. Reemplace todo el contenido del editor con el siguiente bloque de código y realice un **commit de los cambios en la rama main** Deje todo lo demás por defecto.
 
 ```
-
 name: Prisma Cloud IaC Scan
 
 on:
@@ -384,8 +419,12 @@ Toda la información para configuración de la tarea de escaneo IaC de Prisma pu
 7. En cada evento push en el repositorio se va a correr la tarea de escaneo IaC de Prisma Cloud, si desea ver los resultados del escaneo, puede ir a **Actions y seleccionar el último workflow** Al final puede encontrar el enlace directo a Prisma Cloud para ver los hallazgos en Prisma Cloud, pero también los va a encontrar en el mismo output del CLI.
    ![GitHub Actions Results](./images/GitHubActions_Results.png)
 
-Made with Love :blue_heart: by Netdata Cloud & Automate Team.
+# Agradecimientos 👊
 
-```
+Este Workshop está destinado a fines educativos en ambientes de pruebas sobre la herramienta de Prisma Cloud en sus módulos CSPM y Code & App Sec.
 
-```
+Gracias por haber participado, esperamos qué haya sido de mucha utilidad y enriquecedor para su crecimiento profesional. Les animamos a todos a continuar explorando, aprendiendo y aplicando lo que han adquirido aquí en sus proyectos con Prisma Cloud. Manténganse conectados para futuros eventos y oportunidades de aprendizaje con **NETDATA INNOVATION CENTER**.
+
+Esperamos verlos nuevamente en nuestros próximos eventos y talleres. ¡Hasta pronto y sigan innovando! 👋
+
+_Made with Love 💙 by Cloud & Automate Team in [Netdata Innovation Center](https://www.netdatanetworks.com/). `THINKS BEYOND`_
