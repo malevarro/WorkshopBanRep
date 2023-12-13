@@ -109,6 +109,8 @@ _`Nota: Puede navegar por la interfaz tanto cómo desee para revisar los control
 
 Para el caso específico de Network, Prisma Cloud cuenta con 2 engines de análisis de datos de red, el primero es **Network Config Analyzer** encargado de asegurar la configuración de las redes en la nube pública. El segundo es **Network Flow Analyzer** encargado de analizar incidentes dentro de las redes en la nube pública.
 
+## Creando mis controles de red a medida:
+
 ## Visibilizando el incumplimiento:
 
 # Code & Application Security
