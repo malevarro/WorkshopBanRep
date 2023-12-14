@@ -120,9 +120,33 @@ El módulo Investigate es didáctico y te sugiere opciones para completar tu que
 
 ![RQL Example](./images/RQLExample.png)
 
-2. Probar RQL's de ejemplo: para esta actividad se sugiere hacer el despliegue de algunas instancias EC2 en AWS dentro del free tier y generar algunas conexiones de red para poder obtener resultado de los datos de las RQL en Prisma Cloud.
+2. Crear unas instancias EC2 con el archivo terraform `./aws/main.tf`, estas EC2 tendrán exposición a internet por los puertos 80 y 443 y este será alertado por Prisma Cloud cómo incumplimiento.
 
-**`Hacer terrraform template qué sirva para esto.`**
+- Descargue los archivos `./aws/main.tf` y `./aws/script.sh` a su equipo (también puede copiar y pegar su contenido en un archivo con el mismo nombre)
+- En su navegador abra la consola de AWS y abra una CloudShell, allí cargue el archivo descargado (o generado) y ejecute los siguientes comandos (línea por línea):
+
+```
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum -y install terraform
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply --auto-approve
+```
+
+![AWS Cloud Shell](./images/CloudShell.jpg)
+
+- Revise en la consola de AWS en el servicio **EC2 >> Instancias** qué ya hayan dos instancias corriendo con el nombre "EC2-Workshop-0" y "EC2-Workshop-1" Seleccionela cualquiera y revise los detalles de seguridad qué tengan los puertos 443 y 80 abiertos.
+
+- Al finalizar ejecute el siguiente comando para destruir los recursos del workshop desplegados en AWS, también puede solamente borrar la instancia y luego la VPC.
+
+```
+terraform destroy --auto-approve
+```
+
+3. Probar RQL's de ejemplo: para esta actividad se sugiere hacer el despliegue de algunas instancias EC2 en AWS dentro del free tier y generar algunas conexiones de red para poder obtener resultado de los datos de las RQL en Prisma Cloud.
 
 Copie y pegue en el módulo de Investigate cualquiera de las siguientes RQL:
 
@@ -251,35 +275,11 @@ Oprima **Next y Save.**
 
 ![Create Alert Rule](./images/AlertRule.png)
 
-2. Crear una instancia EC2 con el archivo terraform `./aws/main.tf`, esta EC2 tendrá exposición a internet por los puertos 80 y 443 y este será alertado por Prisma Cloud cómo incumplimiento.
+2. Puede recrear el paso N 2 del punto "Real Time Network Revision con RQL" en donde crea unos recursos de AWS con incumplimiento a través de un terraform para qué pueda ver en acción el efecto del alertamiento creado.
 
-- Descargue el archivo `./aws/main.tf` a su equipo (también puede copiar y pegar su contenido en un archivo con el mismo nombre)
-- En su navegador abra la consola de AWS y abra una CloudShell, allí cargue el archivo descargado (o generado) y ejecute los siguientes comandos (línea por línea):
-
-```
-sudo yum install -y yum-utils
-sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-sudo yum -y install terraform
-terraform init
-terraform fmt
-terraform validate
-terraform plan
-terraform apply --auto-approve
-```
-
-![AWS Cloud Shell](./images/CloudShell.jpg)
-
-- Revise en la consola de AWS en el servicio **EC2 >> Instancias** qué ya haya una instancia corriendo con el nombre "EC2-Workshop" Seleccionela y revise los detalles de seguridad qué tengan los puertos 443 y 80 abiertos.
-
-- A partir de aquí sólo resta esperar que Prisma Cloud realice la detección y notifique el incumplimiento a su correo electrónico.
+- Si ha recreado la creación de los recursos con terraform solamente resta esperar que Prisma Cloud realice la detección y notifique el incumplimiento a su correo electrónico.
 
 `Nota:` _Tenga en cuenta qué la detección y alertamiento por parte de Prisma Cloud conlleva un tiempo debido a qué la funcionalidad es 100% Agentless._
-
-- Al finalizar ejecute el siguiente comando para destruir los recursos del workshop desplegados en AWS, también puede solamente borrar la instancia y luego la VPC.
-
-```
-terraform destroy --auto-approve
-```
 
 # Code & Application Security 🛡️
 
