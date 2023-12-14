@@ -53,13 +53,15 @@ resource "aws_route_table_association" "rt-assoc" {
 }
 
 resource "aws_instance" "my-instance" {
+  count = 2
   ami = "ami-0230bd60aa48260c6"
   instance_type = "t2.micro"
   subnet_id = aws_subnet.public.id
   security_groups = [aws_security_group.sg.id]
+  user_data = file("./script.sh")
   
   tags = {
-    Name = "Ec2-Workshop"
+    Name = "Ec2-Workshop-${count.index}"
   }
 }
 
@@ -80,5 +82,13 @@ resource "aws_security_group" "sg" {
     from_port = 80
     to_port = 80
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol = "-1"
+    from_port = 0
+    to_port = 0
+    cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 }
